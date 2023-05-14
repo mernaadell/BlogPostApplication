@@ -4,6 +4,7 @@ import com.blogpost.restfullapi.Payload.CommentDto;
 import com.blogpost.restfullapi.entity.Comment;
 import com.blogpost.restfullapi.entity.Post;
 import com.blogpost.restfullapi.exception.BlogAPIException;
+import com.blogpost.restfullapi.exception.ResourceNotFoundException;
 import com.blogpost.restfullapi.repository.CommentRepository;
 import com.blogpost.restfullapi.repository.PostRepository;
 import org.springframework.http.HttpStatus;
@@ -45,13 +46,25 @@ public class CommentService implements com.blogpost.restfullapi.service.CommentS
 
     @Override
     public CommentDto getCommentByPostIdAndCommentId(Long postId, Long comment_id) {
-        Post post =postRepository.findById(postId).orElseThrow(() -> new com.springboot.blog.exception.ResourceNotFoundException("post", "post", postId));
-        Comment comment =commentRepository.findById(comment_id).orElseThrow(()-> new com.springboot.blog.exception.ResourceNotFoundException("comment", "comment", comment_id));
+        Post post =postRepository.findById(postId).orElseThrow(() -> new ResourceNotFoundException("post", "post", postId));
+        Comment comment =commentRepository.findById(comment_id).orElseThrow(()-> new ResourceNotFoundException("comment", "comment", comment_id));
 
         if(!comment.getPost().getId().equals(post.getId())){
             throw new BlogAPIException(HttpStatus.BAD_REQUEST, "Comment does not belongs to post");
         }
         return mapToDto(comment);
+    }
+
+    @Override
+    public String deleteComment(Long postId, Long comment_id) {
+        Post post =postRepository.findById(postId).orElseThrow(() -> new ResourceNotFoundException("post", "post", postId));
+        Comment comment =commentRepository.findById(comment_id).orElseThrow(()-> new ResourceNotFoundException("comment", "comment", comment_id));
+
+        if(!comment.getPost().getId().equals(post.getId())){
+            throw new BlogAPIException(HttpStatus.BAD_REQUEST, "Comment does not belongs to post");
+        }
+        commentRepository.delete(comment);
+        return "Deleted";
     }
 
     CommentDto mapToDto(Comment comment){

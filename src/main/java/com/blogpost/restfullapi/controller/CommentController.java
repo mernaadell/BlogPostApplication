@@ -38,5 +38,11 @@ public class CommentController {
             ){
         return  commentService.getCommentByPostIdAndCommentId(post_id,comment_id);
     }
-
+    @DeleteMapping("posts/{post_id}/comments/{comment_id}")
+    public String DeleteComment(
+            @PathVariable Long post_id,
+            @PathVariable Long comment_id
+    ){
+        return  commentService.deleteComment(post_id,comment_id);
+    }
 }
