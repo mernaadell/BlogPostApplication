@@ -1,7 +1,8 @@
 package com.blogpost.restfullapi.Payload;
 
+import com.blogpost.restfullapi.entity.Comment;
 import lombok.Data;
-
+import java.util.*;
 @Data
 
 public class PostDto {
@@ -13,4 +14,6 @@ public class PostDto {
     private String description;
 
     private String content;
+
+    private List<Comment> comments;
 }

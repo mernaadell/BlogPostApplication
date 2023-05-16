@@ -3,7 +3,10 @@ package com.blogpost.restfullapi.service.impl;
 import com.blogpost.restfullapi.Payload.PostDto;
 import com.blogpost.restfullapi.Payload.PostResponse;
 import com.blogpost.restfullapi.entity.Post;
+import com.blogpost.restfullapi.exception.ResourceNotFoundException;
 import com.blogpost.restfullapi.repository.PostRepository;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -16,17 +19,17 @@ import java.util.stream.Collectors;
 @Service //will inject this class in other
 public class PostService implements com.blogpost.restfullapi.service.PostService {
 
+    @Autowired
     private PostRepository postRepository;
+    @Autowired
+    private ModelMapper modelMapper;
 
-    public PostService(PostRepository postRepository) {
-        this.postRepository = postRepository;
-    }
 
     @Override
     public PostDto createPost(PostDto postDto) {
         // convert DTO to entity
         Post post = mapToEntity(postDto);
-        Post newPost = postRepository.save(post);
+        Post newPost = postRepository.save(post); //save the new post
 
         // convert entity to DTO
         PostDto postResponse = mapToDTO(newPost);
@@ -45,7 +48,7 @@ public class PostService implements com.blogpost.restfullapi.service.PostService
 
         Page<Post> posts = postRepository.findAll(pageable);
         List<Post> listPosts = posts.getContent();
-        System.out.println(posts);
+
         List<PostDto> content = posts.stream().map(post -> mapToDTO(post)).collect(Collectors.toList());
         PostResponse postResponse = new PostResponse();
 
@@ -61,14 +64,14 @@ public class PostService implements com.blogpost.restfullapi.service.PostService
     @Override
     public PostDto getPost(Long postId) {
 
-        Post post = postRepository.findById(postId).orElseThrow(() -> new com.springboot.blog.exception.ResourceNotFoundException("post", "post", postId));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new ResourceNotFoundException("post", "post", postId));
         PostDto postResponse = mapToDTO(post);
         return postResponse;
     }
 
     @Override
     public PostDto updatePost(PostDto postDto, Long id) {
-        Post post = postRepository.findById(id).orElseThrow(() -> new com.springboot.blog.exception.ResourceNotFoundException("post", "post", id));
+        Post post = postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("post", "post", id));
         post.setTitle(postDto.getTitle());
         post.setDescription(postDto.getDescription());
         post.setContent(postDto.getContent());
@@ -80,28 +83,29 @@ public class PostService implements com.blogpost.restfullapi.service.PostService
 
     @Override
     public void deletePost(Long id) {
-        Post post = postRepository.findById(id).orElseThrow(() -> new com.springboot.blog.exception.ResourceNotFoundException("post", "post", id));
+        Post post = postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("post", "post", id));
         postRepository.delete(post);
 
     }
 
     // convert Entity into DTO
     private PostDto mapToDTO(Post post) {
-        PostDto postDto = new PostDto();
-        postDto.setId(post.getId());
-        postDto.setTitle(post.getTitle());
-        postDto.setDescription(post.getDescription());
-        postDto.setContent(post.getContent());
+        PostDto postDto =modelMapper.map(post,PostDto.class);
+//        PostDto postDto = new PostDto();
+//        postDto.setId(post.getId());
+//        postDto.setTitle(post.getTitle());
+//        postDto.setDescription(post.getDescription());
+//        postDto.setContent(post.getContent());
         return postDto;
     }
 
     // convert DTO to entity
     private Post mapToEntity(PostDto postDto) {
-        Post post = new Post();
-        post.setTitle(postDto.getTitle());
-        post.setDescription(postDto.getDescription());
-        post.setContent(postDto.getContent());
-
+        Post post =modelMapper.map(postDto,Post.class);
+//        Post post = new Post();
+//        post.setTitle(postDto.getTitle());
+//        post.setDescription(postDto.getDescription());
+//        post.setContent(postDto.getContent());
         return post;
 
     }
