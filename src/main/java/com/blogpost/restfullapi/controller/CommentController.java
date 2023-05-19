@@ -2,6 +2,7 @@ package com.blogpost.restfullapi.controller;
 
 import com.blogpost.restfullapi.Payload.CommentDto;
 import com.blogpost.restfullapi.service.CommentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<CommentDto> createComment(
             @PathVariable Long post_id,
-            @RequestBody  CommentDto commentDto
+           @Valid @RequestBody  CommentDto commentDto
     ){
      return new ResponseEntity<>(commentService.createComment(post_id,commentDto), HttpStatus.CREATED);
     }
