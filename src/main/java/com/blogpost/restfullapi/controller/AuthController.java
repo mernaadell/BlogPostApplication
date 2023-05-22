@@ -1,6 +1,7 @@
 package com.blogpost.restfullapi.controller;
 
 import com.blogpost.restfullapi.Payload.LoginDto;
+import com.blogpost.restfullapi.Payload.RegisterDto;
 import com.blogpost.restfullapi.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,11 @@ public class AuthController {
     public ResponseEntity<String> login(@RequestBody LoginDto loginDto) {
         return new ResponseEntity<>(authService.login(loginDto), HttpStatus.OK);
     }
+    @PostMapping("/signup")
+    public ResponseEntity<String> register(@RequestBody RegisterDto registerDto) {
+        return new ResponseEntity<>(authService.register(registerDto), HttpStatus.CREATED);
+    }
+
 
 
 }
