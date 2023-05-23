@@ -1,5 +1,6 @@
 package com.blogpost.restfullapi.Security;
 
+
 import com.blogpost.restfullapi.exception.BlogAPIException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -17,9 +18,11 @@ public class JwtTokenProvider {
 
     @Value("${app.jwt-secret}")
     private String jwtSecret;
-    @Value("${app-jwt-expiration-milliseconds}")
-    private String jwtExpirationDate;
 
+    @Value("${app-jwt-expiration-milliseconds}")
+    private long jwtExpirationDate;
+
+    // generate JWT token
     public String generateToken(Authentication authentication){
         String username = authentication.getName();
 

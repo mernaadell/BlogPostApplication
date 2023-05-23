@@ -2,6 +2,7 @@ package com.blogpost.restfullapi.service.impl;
 
 import com.blogpost.restfullapi.Payload.LoginDto;
 import com.blogpost.restfullapi.Payload.RegisterDto;
+import com.blogpost.restfullapi.Security.JwtTokenProvider;
 import com.blogpost.restfullapi.entity.Role;
 import com.blogpost.restfullapi.entity.User;
 import com.blogpost.restfullapi.exception.BlogAPIException;
@@ -14,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
 
 import java.util.HashSet;
@@ -25,36 +27,44 @@ public class AuthService implements com.blogpost.restfullapi.service.AuthService
     private UserRepository userRepository;
     private RoleRepository roleRepository;
     private PasswordEncoder passwordEncoder;
+    private JwtTokenProvider jwtTokenProvider;
 
-    public AuthService(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(AuthenticationManager authenticationManager,
+                       UserRepository userRepository,
+                       RoleRepository roleRepository,
+                       PasswordEncoder passwordEncoder,
+                       JwtTokenProvider jwtTokenProvider) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Override
     public String login(LoginDto loginDto) {
-        //use authenticate method from security
-      Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUsernameOrEmail(),
+        //use authenticate method from security to authenticate if user exist in database
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUsernameOrEmail(),
                 loginDto.getPassword()));
-      //store in holder
+        //store in holder
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        return "User login successfully";
+        String token = jwtTokenProvider.generateToken(authentication);
+
+        return token;
     }
 
     @Override
     public String register(RegisterDto registerDto) {
         //if exist or not
-        Boolean existsByEmail =userRepository.existsByEmail(registerDto.getEmail());
-        if(existsByEmail){
-           throw new BlogAPIException(HttpStatus.BAD_REQUEST,"this user already exist");
+        Boolean existsByEmail = userRepository.existsByEmail(registerDto.getEmail());
+        if (existsByEmail) {
+            throw new BlogAPIException(HttpStatus.BAD_REQUEST, "this user already exist");
         }
-        Boolean existsByUsername =userRepository.existsByUsername(registerDto.getUsername());
-        if(existsByUsername){
-            throw new BlogAPIException(HttpStatus.BAD_REQUEST,"this user already exist");
+        Boolean existsByUsername = userRepository.existsByUsername(registerDto.getUsername());
+        if (existsByUsername) {
+            throw new BlogAPIException(HttpStatus.BAD_REQUEST, "this user already exist");
         }
         //create user
         User user = new User();
@@ -63,13 +73,19 @@ public class AuthService implements com.blogpost.restfullapi.service.AuthService
         user.setName(registerDto.getName());
         user.setUsername(registerDto.getUsername());
 
-        Set<Role> roles =new HashSet<>();
+        Set<Role> roles = new HashSet<>();
 
         Role role = roleRepository.findByname("user").get();
         roles.add(role);
         user.setRoles(roles);
 
         userRepository.save(user);
-        return "user register successfully";
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(),
+                user.getPassword()));
+        //store in holder
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = jwtTokenProvider.generateToken(authentication);
+        return token;
     }
 }
