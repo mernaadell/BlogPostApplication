@@ -75,17 +75,12 @@ public class AuthService implements com.blogpost.restfullapi.service.AuthService
 
         Set<Role> roles = new HashSet<>();
 
-        Role role = roleRepository.findByname("user").get();
+        Role role = roleRepository.findByname("admin").get();
         roles.add(role);
         user.setRoles(roles);
 
         userRepository.save(user);
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(),
-                user.getPassword()));
-        //store in holder
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtTokenProvider.generateToken(authentication);
-        return token;
+        return "register successfully";
     }
 }

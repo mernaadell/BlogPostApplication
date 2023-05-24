@@ -2,8 +2,10 @@ package com.blogpost.restfullapi.service.impl;
 
 import com.blogpost.restfullapi.Payload.PostDto;
 import com.blogpost.restfullapi.Payload.PostResponse;
+import com.blogpost.restfullapi.entity.Category;
 import com.blogpost.restfullapi.entity.Post;
 import com.blogpost.restfullapi.exception.ResourceNotFoundException;
+import com.blogpost.restfullapi.repository.CategoryRepository;
 import com.blogpost.restfullapi.repository.PostRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,15 +24,19 @@ public class PostService implements com.blogpost.restfullapi.service.PostService
     @Autowired
     private PostRepository postRepository;
     @Autowired
+    private CategoryRepository categoryRepository;
+    @Autowired
     private ModelMapper modelMapper;
 
 
     @Override
     public PostDto createPost(PostDto postDto) {
         // convert DTO to entity
-        Post post = mapToEntity(postDto);
-        Post newPost = postRepository.save(post); //save the new post
+        Category  category = categoryRepository.findById(postDto.getCategory_id()).orElseThrow(()->new ResourceNotFoundException("category","category", postDto.getCategory_id()));
 
+        Post post = mapToEntity(postDto);
+        post.setCategory(category);
+        Post newPost = postRepository.save(post); //save the new post
         // convert entity to DTO
         PostDto postResponse = mapToDTO(newPost);
         return postResponse;
