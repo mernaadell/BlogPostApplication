@@ -44,4 +44,22 @@ public class CategoryService implements com.blogpost.restfullapi.service.Categor
         return modelMapper.map(cat,CategoryDto.class);
     }
 
+    @Override
+    public CategoryDto updateCategory(CategoryDto categoryDto, Long id) {
+        Category cat = categoryRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("category","category",id));
+        cat.setName(categoryDto.getName());
+        cat.setDescription(categoryDto.getDescription());
+
+       Category cat2 = categoryRepository.save(cat);
+
+        return modelMapper.map(cat2,CategoryDto.class);
+    }
+
+    @Override
+    public String deleteCategory(Long id) {
+        Category cat = categoryRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("category","category",id));
+        categoryRepository.delete(cat);
+        return "deleted successfully";
+    }
+
 }
